@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import static com.example.amigosExampe.Security.ApplicationUserRole.*;
+
 @Configuration
 
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -45,13 +47,13 @@ This is only used if the AuthenticationManagerBuilder has not been populated and
         UserDetails annaUser =User.builder()
                 .username("anna")
                 .password(passwordEncoder.encode("password"))
-                .roles("STUDENT")
+                .roles(STUDENT.name())
                 .build();
 
         UserDetails lindaUser = User.builder()
                 .username("linda")
                 .password(passwordEncoder.encode("password123"))
-                .roles("ADMIN")
+                .roles(ADMIN.name())
                 .build();
 
         return new InMemoryUserDetailsManager(annaUser,lindaUser);
@@ -62,9 +64,11 @@ This is only used if the AuthenticationManagerBuilder has not been populated and
         http
                 .authorizeRequests()
                 // any request come like the pattarn
-                .antMatchers("/","/index","/css/**","/js/**")
+                .antMatchers("/","index","/css/*","/js/*")
                 // permit any request coming like pattarn in ant matchers
                 .permitAll()
+                // any url contains below pattarn must be accessed by a user who has role STUDENT
+                .antMatchers("/api/**").hasRole(STUDENT.name())
                 .anyRequest()
                 .authenticated()
                 .and()
