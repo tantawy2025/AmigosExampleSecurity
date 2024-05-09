@@ -56,12 +56,19 @@ This is only used if the AuthenticationManagerBuilder has not been populated and
                 .roles(ADMIN.name())
                 .build();
 
-        return new InMemoryUserDetailsManager(annaUser,lindaUser);
+        UserDetails tomUser = User.builder()
+                .username("tom")
+                .password(passwordEncoder.encode("password"))
+                .roles(ADMINTRAINEE.name())
+                .build();
+
+        return new InMemoryUserDetailsManager(annaUser,lindaUser,tomUser);
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
                 .authorizeRequests()
                 // any request come like the pattarn
                 .antMatchers("/","index","/css/*","/js/*")
