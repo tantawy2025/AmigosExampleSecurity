@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
@@ -12,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import static com.example.amigosExampe.Security.ApplicationUserPermission.COURSES_WRITE;
 import static com.example.amigosExampe.Security.ApplicationUserRole.*;
 
 @Configuration
@@ -47,19 +49,22 @@ This is only used if the AuthenticationManagerBuilder has not been populated and
         UserDetails annaUser =User.builder()
                 .username("anna")
                 .password(passwordEncoder.encode("password"))
-                .roles(STUDENT.name())
+                .authorities(STUDENT.getGrantedAuthorites())
+               // .roles(STUDENT.name())
                 .build();
 
         UserDetails lindaUser = User.builder()
                 .username("linda")
                 .password(passwordEncoder.encode("password123"))
-                .roles(ADMIN.name())
+                .authorities(ADMIN.getGrantedAuthorites())
+              //  .roles(ADMIN.name())
                 .build();
 
         UserDetails tomUser = User.builder()
                 .username("tom")
                 .password(passwordEncoder.encode("password"))
-                .roles(ADMINTRAINEE.name())
+                .authorities(ADMINTRAINEE.getGrantedAuthorites())
+             //   .roles(ADMINTRAINEE.name())
                 .build();
 
         return new InMemoryUserDetailsManager(annaUser,lindaUser,tomUser);
@@ -76,6 +81,11 @@ This is only used if the AuthenticationManagerBuilder has not been populated and
                 .permitAll()
                 // any url contains below pattarn must be accessed by a user who has role STUDENT
                 .antMatchers("/api/**").hasRole(STUDENT.name())
+                .antMatchers(HttpMethod.DELETE,"/managment/api/**").hasAuthority(COURSES_WRITE.getPermission())
+                .antMatchers(HttpMethod.POST,"/managment/api/**").hasAuthority(COURSES_WRITE.getPermission())
+                .antMatchers(HttpMethod.PUT,"/managment/api/**").hasAuthority(COURSES_WRITE.getPermission())
+                .antMatchers(HttpMethod.GET,"/managment/api/**").hasAnyRole(ADMIN.name(),ADMINTRAINEE.name())
+
                 .anyRequest()
                 .authenticated()
                 .and()
