@@ -1,10 +1,13 @@
 package com.example.amigosExampe.Security;
 
+import com.example.amigosExampe.auth.ApplicationUserService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,11 +34,14 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     BCryptPasswordEncoder implementation
     configuration class and define a bean in it
     */
-    @Autowired
+
     private final PasswordEncoder passwordEncoder;
 
-    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
+    private final ApplicationUserService applicationUserService;
+    @Autowired
+    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder, ApplicationUserService applicationUserService) {
         this.passwordEncoder = passwordEncoder;
+        this.applicationUserService = applicationUserService;
     }
 
 /*
@@ -47,32 +53,46 @@ This is only used if the AuthenticationManagerBuilder has not been populated and
 *  there are different ways to expose a bean in Spring: @Configuration with factory method
 * (@Bean), @ComponentScan with @Component, XML etc.
 * */
-    @Override
+//    @Override
+//    @Bean
+//    protected UserDetailsService userDetailsService() {
+//
+//        UserDetails annaUser =User.builder()
+//                .username("anna")
+//                .password(passwordEncoder.encode("password"))
+//                .authorities(STUDENT.getGrantedAuthorites())
+//               // .roles(STUDENT.name())
+//                .build();
+//
+//        UserDetails lindaUser = User.builder()
+//                .username("linda")
+//                .password(passwordEncoder.encode("password123"))
+//                .authorities(ADMIN.getGrantedAuthorites())
+//              //  .roles(ADMIN.name())
+//                .build();
+//
+//        UserDetails tomUser = User.builder()
+//                .username("tom")
+//                .password(passwordEncoder.encode("password"))
+//                .authorities(ADMINTRAINEE.getGrantedAuthorites())
+//             //   .roles(ADMINTRAINEE.name())
+//                .build();
+//
+//        return new InMemoryUserDetailsManager(annaUser,lindaUser,tomUser);
+//    }
+
     @Bean
-    protected UserDetailsService userDetailsService() {
+    public DaoAuthenticationProvider daoAuthenticationProvider(){
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder);
+        provider.setUserDetailsService(applicationUserService);
 
-        UserDetails annaUser =User.builder()
-                .username("anna")
-                .password(passwordEncoder.encode("password"))
-                .authorities(STUDENT.getGrantedAuthorites())
-               // .roles(STUDENT.name())
-                .build();
+        return provider;
+    }
 
-        UserDetails lindaUser = User.builder()
-                .username("linda")
-                .password(passwordEncoder.encode("password123"))
-                .authorities(ADMIN.getGrantedAuthorites())
-              //  .roles(ADMIN.name())
-                .build();
-
-        UserDetails tomUser = User.builder()
-                .username("tom")
-                .password(passwordEncoder.encode("password"))
-                .authorities(ADMINTRAINEE.getGrantedAuthorites())
-             //   .roles(ADMINTRAINEE.name())
-                .build();
-
-        return new InMemoryUserDetailsManager(annaUser,lindaUser,tomUser);
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(daoAuthenticationProvider());
     }
 
     @Override
