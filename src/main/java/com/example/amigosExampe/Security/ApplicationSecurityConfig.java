@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import java.util.concurrent.TimeUnit;
+
 import static com.example.amigosExampe.Security.ApplicationUserPermission.COURSES_WRITE;
 import static com.example.amigosExampe.Security.ApplicationUserRole.*;
 
@@ -92,6 +94,13 @@ This is only used if the AuthenticationManagerBuilder has not been populated and
                 .anyRequest()
                 .authenticated()
                 .and()
-                .httpBasic();
+               // .httpBasic();
+                .formLogin()
+                .loginPage("/login").permitAll()
+                .defaultSuccessUrl("/courses",true)
+                .and()
+                .rememberMe()
+                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
+                .key("somethingverysecure");
     }
 }
