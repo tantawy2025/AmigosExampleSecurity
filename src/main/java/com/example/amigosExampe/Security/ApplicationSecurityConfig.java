@@ -96,11 +96,25 @@ This is only used if the AuthenticationManagerBuilder has not been populated and
                 .and()
                // .httpBasic();
                 .formLogin()
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/courses",true)
+                    .loginPage("/login")
+                    .permitAll()
+                    .defaultSuccessUrl("/courses",true)
+                    .passwordParameter("password")
+                    .usernameParameter("username")
                 .and()
                 .rememberMe()
-                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
-                .key("somethingverysecure");
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
+                    .key("somethingverysecure")
+                    .rememberMeParameter("remember-me")
+                .and()
+                .logout()
+                    .logoutUrl("/logout")
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID","remember-me")
+                    .logoutSuccessUrl("/login");
+
+
+        ;
     }
 }
